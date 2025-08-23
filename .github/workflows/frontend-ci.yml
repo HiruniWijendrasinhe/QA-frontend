@@ -11,7 +11,7 @@ jobs:
     
     env:
       REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
-      REACT_APP_ENV: ci-test
+      FRONTEND_URL: "http://localhost:3000"
 
     steps:
     - name: Checkout code
@@ -36,10 +36,20 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y chromium-browser chromium-chromedriver
 
-    # RUN TESTS SEQUENTIALLY (FIXES THE ERROR)
+    # NEW: Serve the built React app
+    - name: Serve React App for Testing
+      run: |
+        npm install -g serve
+        npx serve -s build -p 3000 > serve.log 2>&1 &
+        echo "Waiting for server to start..."
+        sleep 10
+        echo "Server started successfully"
+
+    # RUN TESTS
     - name: Run All Selenium Tests
       run: |
         npm run selenium-test
         npm run selenium-add
       env:
+        FRONTEND_URL: "http://localhost:3000"
         REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
