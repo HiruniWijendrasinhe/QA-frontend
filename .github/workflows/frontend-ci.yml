@@ -34,15 +34,12 @@ jobs:
     - name: Install Chrome for Selenium
       run: |
         sudo apt-get update
-        sudo apt-get install -y chromium-browser
+        sudo apt-get install -y chromium-browser chromium-chromedriver
 
-    # RUN BOTH SELENIUM TESTS
-    - name: Run Login Test
-      run: npm run selenium-test
-      env:
-        REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
-
-    - name: Run Add Profile Test
-      run: npm run selenium-add
+    # RUN TESTS SEQUENTIALLY (FIXES THE ERROR)
+    - name: Run All Selenium Tests
+      run: |
+        npm run selenium-test
+        npm run selenium-add
       env:
         REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
