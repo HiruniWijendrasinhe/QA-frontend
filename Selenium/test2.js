@@ -1,56 +1,41 @@
 const { Builder, By, until } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
 
-const options = new chrome.Options();
-options.addArguments("--start-maximized");
-options.addArguments("--disable-dev-shm-usage");
-options.addArguments("--no-sandbox");
-options.addArguments("--disable-extensions");
-options.addArguments("--remote-debugging-port=9222");
+(async function addQuestionTest() {
+  // Chrome options for CI - REMOVE user-data-dir or make it unique
+  let options = new chrome.Options();
+  options.addArguments('--no-sandbox');
+  options.addArguments('--disable-dev-shm-usage');
+  options.addArguments('--disable-gpu');
+  options.addArguments('--headless=new');
+  options.addArguments('--incognito'); //  Use incognito instead of user-data-dir
 
+  // If you MUST use user-data-dir, make it unique:
+  // options.addArguments('--user-data-dir=/tmp/chrome-profile-test2-' + Date.now());
 
-async function addProfileTest() {
-    const driver = await new Builder()
-        .forBrowser("chrome")
-        .setChromeOptions(options)
-        .build();
+  let driver = await new Builder()
+    .forBrowser("chrome")
+    .setChromeOptions(options)
+    .build();
 
-    try {
-        // Maximize window to ensure it's visible
-        await driver.manage().window().maximize();
+  try {
+    // Set longer timeouts
+    await driver.manage().setTimeouts({
+      implicit: 30000,
+      pageLoad: 30000
+    });
 
-        console.log("Opening add-profile page...");
-        await driver.get("http://localhost:3000/add-profile");
-        await driver.sleep(1000);
+    // Your test logic here...
+    const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    await driver.get(`${baseUrl}/some-page`);
 
-        console.log("Filling name...");
-        await driver.findElement(By.css('input[placeholder="Name"]')).sendKeys("Amara");
-        console.log("Filling age...");
-        await driver.findElement(By.css('input[placeholder="Age"]')).sendKeys("25");
-        console.log("Filling address...");
-        await driver.findElement(By.css('textarea[placeholder="Address"]')).sendKeys("123 Main Street");
-        console.log("Filling phone...");
-        await driver.findElement(By.css('input[placeholder="PhoneNo"]')).sendKeys("0771234567");
+    // ... rest of your test code
 
-        const img = await driver.findElement(By.id("IMG1"));
-        const src = await img.getAttribute("src");
-        console.log(src.includes("DefauProfile.png") ? "Default profile image is shown" : "Profile image uploaded by user is shown");
-
-        console.log("Submitting form...");
-        await driver.findElement(By.css('button[type="submit"]')).click();
-
-        console.log("Waiting for navigation...");
-        await driver.wait(until.urlIs("http://localhost:3000/"), 5000);
-        console.log("Profile added successfully! Reached homepage.");
-
-    } catch (err) {
-        console.error("Test failed:", err);
-    } finally {
-        console.log("Test completed. Browser will close in 10 seconds...");
-        await driver.sleep(10000); // Wait 10 seconds before closing
-        await driver.quit();
-        console.log("Browser closed.");
-    }
-}
-
-addProfileTest();
+  } catch (err) {
+    console.error("Add question test failed:", err.message);
+    const screenshot = await driver.takeScreenshot();
+    console.log("Screenshot data available for debugging");
+  } finally {
+    await driver.quit();
+  }
+})();

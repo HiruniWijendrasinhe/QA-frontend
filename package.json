@@ -21,7 +21,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "selenium-test": "node ./Selenium/test.js",
-    "selenium-add": "node ./Selenium/test2.js"
+    "selenium-add": "node ./Selenium/test2.js",
+    "selenium-all": "npm run selenium-test && npm run selenium-add"
   },
   "eslintConfig": {
     "extends": [
