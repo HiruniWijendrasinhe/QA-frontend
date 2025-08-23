@@ -9,10 +9,8 @@ jobs:
     name: Build React App & Run E2E Tests
     runs-on: ubuntu-latest
     
-    # ADD ENVIRONMENT VARIABLES HERE
     env:
-      BACK_END_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
-      # You can add other environment variables too
+      REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
       REACT_APP_ENV: ci-test
 
     steps:
@@ -23,13 +21,15 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+        cache: 'npm'
 
     - name: Install dependencies
       run: npm ci
 
     - name: Build project
-      run: npm run build
-      # The build process will use the BACK_END_URL from env
+      run: CI=false npm run build
+      env:
+        REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
 
     - name: Install Chrome for Selenium
       run: |
@@ -39,8 +39,10 @@ jobs:
     # RUN BOTH SELENIUM TESTS
     - name: Run Login Test
       run: npm run selenium-test
-      # Tests will have access to BACK_END_URL
+      env:
+        REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
 
     - name: Run Add Profile Test
       run: npm run selenium-add
-      # Tests will have access to BACK_END_URL
+      env:
+        REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
